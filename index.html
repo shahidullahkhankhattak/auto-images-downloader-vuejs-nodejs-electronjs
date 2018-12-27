@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="./sementic-ui/semantic.min.css">
+    <link rel="stylesheet" href="./sementic-ui/semantic.min.js">
+    <title>Gui Image Scrapper</title>
+    <style>
+        @font-face {
+            font-family: console;
+            src: url(./sementic-ui/font.ttf);
+        }
+        .console{
+            font-family: console;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mainapp">
+        <div class="ui inverted teal segment">
+            <h2 class="ui center aligned icon header">
+                <i class="circular world icon"></i>
+                Images Scrapper
+            </h2>
+        </div>
+        <div class="ui center aligned grid" style="margin-top:15px;">
+            <div class="ui placeholder segment">
+                <div class="ui form">
+                    <div class="fields">
+                        <div class="field">
+                            <label>Category</label>
+                            <input type="text" placeholder="Category" v-model="category">
+                        </div>
+                        <div class="field">
+                            <label>Prefix</label>
+                            <input type="text" placeholder="Prefix" v-model="prefix">
+                        </div>
+                        <div class="field">
+                            <label>Search Engine</label>
+                            <select v-model="searchEngine">
+                                <option value="google">Google</option>
+                                <option value="msn">MSN</option>
+                                <option value="bing">Bing</option>
+                                <option value="yahoo">Yahoo</option>
+                                <option value="duckduckgo">DuckDuckGo</option>
+                                <option value="yendex">Yendex</option>
+                                <option value="all">All</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ui two fields">
+                        <div class="ten wide field">
+                            <label>Search Keywords</label>
+                            <input type="text" placeholder="Search Keywords" v-model="searchKeywords">
+                        </div>
+                        <div class="six wide field">
+                            <label>Limit</label>
+                            <input type="text" placeholder="Search Engine" v-model="limit">
+                        </div>
+                    </div>
+                    <button class="ui labeled icon green button" v-on:click="process()">
+                        <i class="check icon"></i>
+                        Get Images
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="ui inverted segment console" style="height:122px;overflow-y:scroll;width:100%;padding:10px;margin-top:25px;color:white;font-weight:bold;">
+            <div v-for="log in logs">{{log}}</div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="./vue.js"></script>
+<script type="text/javascript">
+    const electron = require('electron');
+    const {
+        ipcRenderer
+    } = electron;
+
+    var vue = new Vue({
+        el: "#mainapp",
+        data: function () {
+            return {
+                category: "",
+                prefix: "",
+                searchEngine: "google",
+                searchKeywords: "",
+                limit: "1000",
+                logs: []
+            }
+        },
+        methods: {
+            process: function () {
+                ipcRenderer.send("process", {
+                    category: this.category,
+                    prefix: this.prefix,
+                    searchEngine: this.searchEngine,
+                    searchKeywords: this.searchKeywords,
+                    limit: this.limit
+                });
+            }
+        },
+        mounted: function () {
+            var _this = this;
+            ipcRenderer.on("console", function(e, data){
+                for(var log in _this.logs){
+                    if(log.indexOf("crawling the web") > -1){
+                        _this.logs.splice(_this.logs.indexOf(log), 1);
+                    }
+                }
+                _this.logs.push(data);
+            });
+        }
+    })
+</script>
+
+</html>
